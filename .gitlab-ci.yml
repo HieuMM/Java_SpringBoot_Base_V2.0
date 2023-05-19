@@ -1,0 +1,17 @@
+stages:
+  - deploy
+
+deploy:
+  stage: deploy
+  tags:
+    - spring
+  only:
+    - /^dev_[0-9]+(?:.[0-9]+)+$/ # regular expression dev_0.0.1, dev_0.0.2, dev_0.0.3, etc.
+  script:
+    - chmod 755 gradlew
+    - ./gradlew assemble #build file jar
+    - docker container rm -f login || true
+    - docker image rm -f login:latest || true
+    - docker build -t login:latest . #build image jar
+    - docker run -d -p 8085:81 --name login login:latest #run container underground mode port 81 of container to port 8085 of host with name login from image login:latest
+
